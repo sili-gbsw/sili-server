@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./venv/Scripts/python.exe *)",
+      "Bash(git -C C:/Users/knhye/sili-server check-ignore -v venv sili.db .env app/__pycache__ .env.example README.md)",
+      "Bash(git -C C:/Users/knhye/sili-server status --short)"
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1778648500018,
+  "projectRoot": "C:\\Users\\knhye\\sili-server",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": "snake_case",
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 2,
+      "lastAccessed": 1778648499997,
+      "keyFiles": [
+        "main.py",
+        "__init__.py"
+      ]
+    },
+    "venv": {
+      "path": "venv",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1778648499998,
+      "keyFiles": [
+        "pyvenv.cfg"
+      ]
+    },
+    "app\\api": {
+      "path": "app\\api",
+      "purpose": "API routes",
+      "fileCount": 1,
+      "lastAccessed": 1778648499999,
+      "keyFiles": [
+        "__init__.py"
+      ]
+    },
+    "app\\models": {
+      "path": "app\\models",
+      "purpose": "Data models",
+      "fileCount": 2,
+      "lastAccessed": 1778648499999,
+      "keyFiles": [
+        "user.py",
+        "__init__.py"
+      ]
+    },
+    "app\\schemas": {
+      "path": "app\\schemas",
+      "purpose": "Schema definitions",
+      "fileCount": 2,
+      "lastAccessed": 1778648500000,
+      "keyFiles": [
+        "user.py",
+        "__init__.py"
+      ]
+    },
+    "venv\\Lib": {
+      "path": "venv\\Lib",
+      "purpose": "Library code",
+      "fileCount": 0,
+      "lastAccessed": 1778648500001,
+      "keyFiles": []
+    },
+    "venv\\Scripts": {
+      "path": "venv\\Scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 15,
+      "lastAccessed": 1778648500002,
+      "keyFiles": [
+        "activate",
+        "activate.bat",
+        "activate.fish"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": ".env.example",
+      "accessCount": 1,
+      "lastAccessed": 1778648557686,
+      "type": "file"
+    },
+    {
+      "path": "requirements.txt",
+      "accessCount": 1,
+      "lastAccessed": 1778648558314,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

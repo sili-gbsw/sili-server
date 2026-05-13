@@ -1,0 +1,92 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Environment variables / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets.json
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+sili.db
+
+# Logs
+*.log
+logs/
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checkers / linters caches
+.mypy_cache/
+.dmypy.json
+.pyre/
+.ruff_cache/
+.pytype/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+
+# FastAPI / Uvicorn
+*.pid
+
+# Local Claude / OMC state (uncomment if you don't want to share)
+# .claude/
+# .omc/

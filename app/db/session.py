@@ -1,41 +1,42 @@
-from collections.abc import AsyncIterator
-
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+import certifi
+from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import settings
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DB_ECHO,
-    future=True,
-)
-
-AsyncSessionLocal = async_sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autoflush=False,
-)
+_client: AsyncIOMotorClient | None = None
+_db: AsyncIOMotorDatabase | None = None
 
 
-async def get_db() -> AsyncIterator[AsyncSession]:
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        except Exception:
-            await session.rollback()
-            raise
+def get_client() -> AsyncIOMotorClient:
+    if _client is None:
+        raise RuntimeError("MongoDB client is not initialized. Call init_db() first.")
+    return _client
+
+
+def get_db() -> AsyncIOMotorDatabase:
+    if _db is None:
+        raise RuntimeError("MongoDB database is not initialized. Call init_db() first.")
+    return _db
 
 
 async def init_db() -> None:
-    """Create all tables. Call on startup for the SQLite quickstart;
-    swap for Alembic migrations in production."""
-    from app.db.base import Base
-    from app import models  # noqa: F401 - register models on Base
+    """Initialize Motor client and register Beanie document models."""
+    global _client, _db
+    from app import models
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    _client = AsyncIOMotorClient(
+        settings.MONGODB_URL,
+        tlsCAFile=certifi.where(),
+        serverSelectionTimeoutMS=10_000,
+    )
+    _db = _client[settings.MONGODB_DB]
+    await init_beanie(database=_db, document_models=models.__all_documents__)
+
+
+async def close_db() -> None:
+    global _client, _db
+    if _client is not None:
+        _client.close()
+    _client = None
+    _db = None

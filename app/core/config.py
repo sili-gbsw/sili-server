@@ -13,17 +13,18 @@ class Settings(BaseSettings):
     )
 
     PROJECT_NAME: str = "Sili Server"
-    PROJECT_DESCRIPTION: str = "FastAPI + SQLAlchemy(Async) starter"
+    PROJECT_DESCRIPTION: str = "FastAPI + MongoDB(Beanie) starter"
     PROJECT_VERSION: str = "0.1.0"
     API_V1_PREFIX: str = "/api/v1"
 
-    DATABASE_URL: str = Field(
-        default="sqlite+aiosqlite:///./sili.db",
-        description="SQLAlchemy async DSN. Examples: "
-        "sqlite+aiosqlite:///./sili.db, "
-        "postgresql+asyncpg://user:pass@host:5432/db",
+    MONGODB_URL: str = Field(
+        default="mongodb://localhost:27017",
+        description="MongoDB connection URI.",
     )
-    DB_ECHO: bool = False
+    MONGODB_DB: str = Field(
+        default="sili",
+        description="MongoDB database name.",
+    )
 
 
 @lru_cache

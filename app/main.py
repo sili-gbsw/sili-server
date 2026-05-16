@@ -7,13 +7,18 @@ from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.openapi import setup_openapi
 from app.core.response import ApiResponse, success_response
-from app.db.session import init_db
+from app.db.session import close_db, init_db
+from app.services.config_seed import seed_default_config
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await init_db()
-    yield
+    await seed_default_config()
+    try:
+        yield
+    finally:
+        await close_db()
 
 
 app = FastAPI(

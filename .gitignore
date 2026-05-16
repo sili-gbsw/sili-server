@@ -39,11 +39,13 @@ ENV/
 *.key
 secrets.json
 
-# Databases
+# Databases / data dumps
 *.db
 *.sqlite
 *.sqlite3
 sili.db
+*.bson
+dump/
 
 # Logs
 *.log

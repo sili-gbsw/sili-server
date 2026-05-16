@@ -27,6 +27,19 @@ class JudgementStatus(str, Enum):
     REJECT = "REJECT"    # 🔴 61~100
 
 
+class ForcedReason(str, Enum):
+    """F-04 강제 격상 사유 코드 (`Judgement.forced_reason`).
+
+    docs 4절 표 + 10.3 절 강제 격상 규칙. 첫 매치되는 룰의 코드가 저장된다.
+    `*_UNREGISTERED` 만 🔴 REJECT 강제 분기, 나머지는 🟡 CAUTION 격상.
+    """
+
+    MATERIAL_UNREGISTERED = "MATERIAL_UNREGISTERED"  # 🔴 미등록 재질 — config 에 없음
+    MATERIAL_MISMATCH = "MATERIAL_MISMATCH"          # 🟡 등록(부품 마스터) vs 실측 재질 불일치
+    THICKNESS_RATIO_OVER = "THICKNESS_RATIO_OVER"    # 🟡 max/min 두께 비가 한계 초과
+    ELECTRODE_SHAPE_MISMATCH = "ELECTRODE_SHAPE_MISMATCH"  # 🟡 권장 전극 형상과 장착 형상 불일치
+
+
 class JudgementDeviation(BaseModel):
     """파라미터별 이탈률/점수 (F-05 가 채움). 단위는 정규화 % 또는 0~100 점수."""
 
@@ -47,12 +60,11 @@ class Judgement(BaseModel):
         ..., ge=0, le=100, description="이상 점수 (0~100, 높을수록 비정상)."
     )
     status: JudgementStatus = Field(..., description="점수 구간에 따른 상태 분기.")
-    forced_reason: str | None = Field(
+    forced_reason: ForcedReason | None = Field(
         default=None,
         description=(
-            "F-04 강제 격상 사유 코드 (예: 'MATERIAL_MISMATCH', "
-            "'THICKNESS_RATIO_OVER', 'ELECTRODE_SHAPE_MISMATCH'). 강제 격상이 "
-            "아니면 null."
+            "F-04 강제 격상 사유 코드. 강제 격상이 아니면 null. "
+            "코드별 의미는 `ForcedReason` enum 참고."
         ),
     )
     deviations: JudgementDeviation = Field(

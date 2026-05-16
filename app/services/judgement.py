@@ -1,22 +1,91 @@
-"""F-04 (강제 격상) + F-05 (판정 엔진) — placeholder.
+"""F-04 (강제 격상) + F-05 (판정 엔진).
 
-Phase 1 (F-01 ingestion) 단계에서는 미구현 상태이다. `evaluate()` 가
-`None` 을 반환하면 ingestion 흐름은 `WeldEvent.judgement` 를 `None` 그대로
-저장한다 (= 판정 대기).
+판정 엔진 진입부에서 docs 4절 표의 4개 강제 격상 룰을 순차 검사한다.
+어떤 룰에 매치되면 F-05 점수 산출을 건너뛰고 즉시 `Judgement` 를 반환.
+어떤 룰에도 안 걸리면 F-05 로 진입 (현재는 placeholder, Phase 2 후속).
 
-Phase 2 에서 이 한 함수만 채우면 F-01 코드 수정 없이 ingest → 즉시 판정
-흐름이 활성화된다.
+F-04 룰 우선순위
+  1. (REJECT) 미등록 재질 — config.material_profiles 에 없는 코드.
+  2. (CAUTION) 재질 불일치 — 부품 마스터 등록 vs 실측 코드 차이.
+  3. (CAUTION) 두께 비 한계 초과 — max(t1,t2)/min(t1,t2) > config.thickness_ratio_limit.
+  4. (CAUTION) 전극 형상 불일치 — t_thin 기준 권장 형상 vs 실측 형상 차이.
 
-판정 알고리즘 (docs 10절 참고):
-  1. (F-04) 강제 격상 사전 체크 — 재질 불일치 / 두께 비 1:3 초과 /
-     전극 형상 불일치 → forced_reason 채워서 즉시 반환
-  2. (F-05) MILD 기준값 + 재질 보정 → 등급별 허용 편차로 정규화 →
-     파라미터별 이탈률 × 가중치 합산 → 0~100 점수 → 상태 분기
+첫 매치에서 즉시 반환한다 (의사코드의 force_caution 호출 흐름과 일치).
 """
 
 from app.models.part import Part
-from app.models.weld_event import Judgement, WeldEvent
+from app.models.weld_event import (
+    ForcedReason,
+    Judgement,
+    JudgementDeviation,
+    JudgementStatus,
+    WeldEvent,
+)
 from app.models.welding_config import WeldingConfig
+
+# 강제 격상 시 점수. F-05 미진입이라 정확한 점수는 없지만, 상태 구간
+# 진입점(또는 최대값)으로 일관 설정하여 점수 기반 통계/필터링이 깨지지 않게 한다.
+_CAUTION_FORCED_SCORE = 31.0
+_REJECT_FORCED_SCORE = 100.0
+
+
+def check_forced_escalation(
+    event: WeldEvent,
+    part: Part,
+    config: WeldingConfig,
+) -> Judgement | None:
+    """F-04 강제 격상 사전 체크. 첫 매치 Judgement 반환, 무매치는 None."""
+    # 1. 미등록 재질 → REJECT
+    if event.material_code.value not in config.material_profiles:
+        return _build_forced(
+            score=_REJECT_FORCED_SCORE,
+            status=JudgementStatus.REJECT,
+            reason=ForcedReason.MATERIAL_UNREGISTERED,
+        )
+
+    # 2. 재질 불일치 (등록 vs 실측) → CAUTION
+    if event.material_code != part.material_code:
+        return _build_forced(
+            score=_CAUTION_FORCED_SCORE,
+            status=JudgementStatus.CAUTION,
+            reason=ForcedReason.MATERIAL_MISMATCH,
+        )
+
+    # 3. 두께 비 초과 → CAUTION
+    t_thin = min(event.t1, event.t2)
+    t_thick = max(event.t1, event.t2)
+    if t_thin > 0 and t_thick / t_thin > config.thickness_ratio_limit:
+        return _build_forced(
+            score=_CAUTION_FORCED_SCORE,
+            status=JudgementStatus.CAUTION,
+            reason=ForcedReason.THICKNESS_RATIO_OVER,
+        )
+
+    # 4. 전극 형상 불일치 → CAUTION
+    rule = config.electrode_shape_rule
+    expected_shape = rule.below if t_thin < rule.thin_threshold_mm else rule.above_or_equal
+    if event.electrode_shape.value != expected_shape:
+        return _build_forced(
+            score=_CAUTION_FORCED_SCORE,
+            status=JudgementStatus.CAUTION,
+            reason=ForcedReason.ELECTRODE_SHAPE_MISMATCH,
+        )
+
+    return None
+
+
+def _build_forced(
+    *,
+    score: float,
+    status: JudgementStatus,
+    reason: ForcedReason,
+) -> Judgement:
+    return Judgement(
+        score=score,
+        status=status,
+        forced_reason=reason,
+        deviations=JudgementDeviation(),
+    )
 
 
 async def evaluate(
@@ -24,15 +93,14 @@ async def evaluate(
     part: Part,
     config: WeldingConfig,
 ) -> Judgement | None:
-    """타점 이벤트를 평가하여 판정 결과를 반환. 미구현 시 None.
+    """타점 이벤트 평가 엔진.
 
-    Args:
-        event: 방금 저장된 WeldEvent (스냅샷 필드 포함).
-        part: 부품 마스터 (config 로드 키 조회용).
-        config: 시스템 동적 설정 (두께·재질·등급·전극형상 규칙).
-
-    Returns:
-        판정 완료 시 Judgement. 미구현/판정 보류 시 None.
+    1) F-04 강제 격상 사전 체크 — 매치 시 즉시 반환.
+    2) F-05 점수 산출 — Phase 2 후속 (현재 placeholder, None 반환).
     """
-    # F-04/F-05 구현 위치. Phase 2 에서 채운다.
+    forced = check_forced_escalation(event, part, config)
+    if forced is not None:
+        return forced
+
+    # F-05 점수 산출 자리 (Phase 2 에서 채움).
     return None

@@ -135,14 +135,14 @@
   "hotPaths": [
     {
       "path": "app\\api\\v1\\router.py",
-      "accessCount": 13,
-      "lastAccessed": 1778983802874,
+      "accessCount": 14,
+      "lastAccessed": 1778992560327,
       "type": "file"
     },
     {
       "path": "app\\models\\__init__.py",
-      "accessCount": 11,
-      "lastAccessed": 1778979834299,
+      "accessCount": 12,
+      "lastAccessed": 1778992556332,
       "type": "file"
     },
     {
@@ -152,15 +152,21 @@
       "type": "file"
     },
     {
-      "path": "app\\core\\openapi.py",
-      "accessCount": 7,
-      "lastAccessed": 1778947732529,
+      "path": "app\\services\\weld_event_service.py",
+      "accessCount": 9,
+      "lastAccessed": 1778992581698,
       "type": "file"
     },
     {
       "path": "app\\models\\weld_event.py",
+      "accessCount": 8,
+      "lastAccessed": 1778992541829,
+      "type": "file"
+    },
+    {
+      "path": "app\\core\\openapi.py",
       "accessCount": 7,
-      "lastAccessed": 1778979494884,
+      "lastAccessed": 1778947732529,
       "type": "file"
     },
     {
@@ -170,15 +176,15 @@
       "type": "file"
     },
     {
-      "path": "app\\services\\weld_event_service.py",
-      "accessCount": 7,
-      "lastAccessed": 1778983787917,
-      "type": "file"
-    },
-    {
       "path": "app\\db\\session.py",
       "accessCount": 5,
       "lastAccessed": 1778979549257,
+      "type": "file"
+    },
+    {
+      "path": "app\\schemas\\weld_event.py",
+      "accessCount": 5,
+      "lastAccessed": 1778992551846,
       "type": "file"
     },
     {
@@ -191,6 +197,12 @@
       "path": "app\\models\\reinspection.py",
       "accessCount": 4,
       "lastAccessed": 1778983017546,
+      "type": "file"
+    },
+    {
+      "path": "app\\services\\reinspection_service.py",
+      "accessCount": 4,
+      "lastAccessed": 1778993422479,
       "type": "file"
     },
     {
@@ -302,12 +314,6 @@
       "type": "file"
     },
     {
-      "path": "app\\schemas\\weld_event.py",
-      "accessCount": 2,
-      "lastAccessed": 1778979502904,
-      "type": "file"
-    },
-    {
       "path": "app\\schemas\\part.py",
       "accessCount": 2,
       "lastAccessed": 1778979503487,
@@ -335,12 +341,6 @@
       "path": "app\\db\\base.py",
       "accessCount": 2,
       "lastAccessed": 1778979506060,
-      "type": "file"
-    },
-    {
-      "path": "app\\services\\reinspection_service.py",
-      "accessCount": 2,
-      "lastAccessed": 1778983000890,
       "type": "file"
     },
     {

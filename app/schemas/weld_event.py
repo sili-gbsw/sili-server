@@ -15,6 +15,15 @@ class WeldEventCreate(BaseModel):
     요청에 포함하지 않는다.
     """
 
+    line_id: str = Field(
+        default="LINE-DEFAULT",
+        min_length=1,
+        max_length=64,
+        description=(
+            "생산 라인 식별자. F-03 학습 집계 키. 생략 시 'LINE-DEFAULT'."
+        ),
+        examples=["LINE-A"],
+    )
     part_id: str = Field(
         ...,
         min_length=1,
@@ -63,6 +72,7 @@ class WeldEventRead(BaseModel):
 
     id: str = Field(..., description="MongoDB ObjectId(문자열).")
     event_id: str = Field(..., description="서버 발급 이벤트 식별자.")
+    line_id: str
     part_id: str
     point_id: str
     current_kA: float
@@ -84,6 +94,7 @@ class WeldEventRead(BaseModel):
         return cls(
             id=str(doc.id),
             event_id=doc.event_id,
+            line_id=doc.line_id,
             part_id=doc.part_id,
             point_id=doc.point_id,
             current_kA=doc.current_kA,

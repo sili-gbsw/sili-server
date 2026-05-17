@@ -1,4 +1,4 @@
-"""F-01 공정 데이터 수집 + F-07 알림 푸시 + F-09 이력·추적성 — 서비스 레이어.
+"""F-01 공정 데이터 수집 + F-03 학습 + F-07 알림 + F-09 이력 — 서비스 레이어.
 
 ingest_weld_event() 의 처리 흐름 (docs F-01 처리 표):
   1. 필수 필드 검증 — Pydantic 스키마(`WeldEventCreate`) 에서 자동 처리.
@@ -7,7 +7,8 @@ ingest_weld_event() 의 처리 흐름 (docs F-01 처리 표):
   4. 판정 엔진(F-04/F-05) 호출 — 결과가 있으면 `judgement` 임베드 후 save.
   5. F-06 재검 큐 적재 — 🔴 REJECT 또는 강제 격상 시 자동 enqueue.
   6. F-07 알림 푸시 — 인-프로세스 브로드캐스터로 전송 (구독자 없으면 no-op).
-  7. 최종 WeldEvent 반환.
+  7. F-03 학습 표본 누적 — 활성 세션이 있으면 sample_count 증가.
+  8. 최종 WeldEvent 반환.
 
 F-09 조회·내보내기 (읽기 전용)
   - list_weld_events(): 필터(part_id/point_id/status/from/to) + 페이지네이션.
@@ -27,6 +28,7 @@ from app.models.weld_event import JudgementStatus, WeldEvent
 from app.schemas.weld_event import WeldEventRead
 from app.services.config_service import get_or_init_config
 from app.services.judgement import evaluate
+from app.services.learning_service import update_learning_from_event
 from app.services.notifier import notifier
 from app.services.part_service import get_part
 from app.services.reinspection_service import enqueue_from_judgement
@@ -62,6 +64,8 @@ async def ingest_weld_event(payload: dict[str, Any]) -> WeldEvent:
                 "data": WeldEventRead.from_document(event).model_dump(mode="json"),
             }
         )
+    # 7. F-03 학습 표본 누적 (활성 세션 없으면 no-op). 판정 유무와 무관.
+    await update_learning_from_event(event)
 
     return event
 

@@ -1,7 +1,8 @@
-"""F-06. 재검 큐 관리 — 서비스 레이어.
+"""F-06 재검 큐 관리 + F-08 학습 환류 트리거 — 서비스 레이어.
 
 판정 결과가 큐 등록 조건에 해당하면 자동 호출(`enqueue_from_judgement`)
 또는 작업자 API 호출로 `reinspection_queue` 컬렉션을 갱신한다.
+재검 결과 등록 시 `is_defect=false` 면 F-08 환류를 best-effort 로 호출.
 
 큐 단위 정책 — **1 트리거 이벤트 = 1 큐**
   같은 부품의 다른 타점이 또 트리거되어도 신규 큐를 만든다 (집계하지 않음).
@@ -15,6 +16,7 @@
   - 그 외 (NORMAL / 강제 격상 없는 CAUTION): 등록 안 함.
 """
 
+import logging
 import secrets
 from datetime import datetime, timezone
 from typing import Any
@@ -29,6 +31,9 @@ from app.models.reinspection import (
     ReinspectionStatus,
 )
 from app.models.weld_event import Judgement, JudgementStatus, WeldEvent
+from app.services.learning_service import apply_feedback_to_learning
+
+logger = logging.getLogger(__name__)
 
 
 def generate_queue_id() -> str:
@@ -114,10 +119,10 @@ async def list_queues(
 async def submit_result(
     queue_id: str, payload: dict[str, Any]
 ) -> ReinspectionQueue:
-    """재검 결과 등록 → CLOSED 전이.
+    """재검 결과 등록 → CLOSED 전이 + F-08 환류 (best-effort).
 
-    CLOSED 큐에 결과를 다시 등록하면 409. F-08 학습 환류는 미구현이므로
-    여기서는 큐 상태 갱신까지만 처리한다.
+    CLOSED 큐에 결과를 다시 등록하면 409. `is_defect=false` (실제 정상) 시
+    학습 환류를 시도하며, 실패해도 큐 닫힘 자체는 유지된다 (로그만 남김).
     """
     queue = await get_queue(queue_id)
     if queue.status == ReinspectionStatus.CLOSED:
@@ -130,4 +135,18 @@ async def submit_result(
     queue.status = ReinspectionStatus.CLOSED
     queue.closed_at = datetime.now(timezone.utc)
     await queue.save()
+
+    # F-08: 실제 정상 판정일 때만 환류. 실패해도 큐 close 는 그대로.
+    if not queue.result.is_defect:
+        try:
+            await apply_feedback_to_learning(
+                queue_id=queue.queue_id, event_ids=list(queue.event_ids)
+            )
+        except Exception as exc:
+            logger.warning(
+                "F-08 feedback failed for queue_id=%s: %s",
+                queue.queue_id,
+                exc,
+                exc_info=True,
+            )
     return queue

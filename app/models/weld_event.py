@@ -91,6 +91,15 @@ class WeldEvent(Document):
         max_length=64,
         description="이벤트 식별자 (예: 'evt_<hex>'). 서버에서 발급, unique.",
     )
+    line_id: str = Field(
+        default="LINE-DEFAULT",
+        min_length=1,
+        max_length=64,
+        description=(
+            "생산 라인 식별자. F-03 정상 범위 학습이 (line_id, part_id) "
+            "키로 집계. PLC 미송신 시 기본값 'LINE-DEFAULT'."
+        ),
+    )
     part_id: str = Field(
         ..., description="부품 마스터 식별자. `Part.part_id` 와 일치해야 한다."
     )

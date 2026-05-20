@@ -9,6 +9,7 @@
 이 모듈은 read-only. WeldEvent 컬렉션을 직접 aggregate 한다.
 """
 
+import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -40,34 +41,27 @@ async def get_shift_stats(
         - pass_rate: 합격률 (0~1, 판정 완료 기준). judged==0 이면 None.
         - hourly_rate: 시간당 생산 (total/hours, 소수점 1자리).
     """
-    if now is not None:
-        end = now
-    else:
-        real_now = datetime.now(timezone.utc)
-        anchor_filter: dict[str, Any] = {} if line_id is None else {"line_id": line_id}
-        latest = await WeldEvent.find(anchor_filter).sort("-timestamp").first_or_none()
-        if latest is not None:
-            latest_ts = latest.timestamp
-            if latest_ts.tzinfo is None:
-                latest_ts = latest_ts.replace(tzinfo=timezone.utc)
-            end = latest_ts if latest_ts < real_now else real_now
-        else:
-            end = real_now
-
+    end = now if now is not None else datetime.now(timezone.utc)
     start = end - timedelta(hours=hours)
 
     base: dict[str, Any] = {"timestamp": {"$gte": start, "$lte": end}}
     if line_id is not None:
         base["line_id"] = line_id
 
-    total = await WeldEvent.find(base).count()
     judged_query = {**base, "judgement": {"$ne": None}}
-    judged = await WeldEvent.find(judged_query).count()
+    status_queries = [
+        {**base, "judgement.status": s.value} for s in JudgementStatus
+    ]
 
-    counts: dict[str, int] = {}
-    for status in JudgementStatus:
-        q = {**base, "judgement.status": status.value}
-        counts[status.value.lower()] = await WeldEvent.find(q).count()
+    total, judged, *status_counts = await asyncio.gather(
+        WeldEvent.find(base).count(),
+        WeldEvent.find(judged_query).count(),
+        *[WeldEvent.find(q).count() for q in status_queries],
+    )
+
+    counts = {
+        s.value.lower(): status_counts[i] for i, s in enumerate(JudgementStatus)
+    }
 
     pass_rate: float | None
     if judged == 0:

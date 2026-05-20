@@ -19,7 +19,7 @@
   - 표본이 2건 미만이면 σ 산출 불가 → 세션은 COLLECTING 유지하고 카운터만 저장.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from statistics import mean, stdev
 from typing import Any
 
@@ -327,6 +327,83 @@ async def get_recent_samples(
             }
         )
     return rows
+
+
+async def seed_learning_history(
+    *, line_id: str, part_id: str
+) -> NormalRangeLearning:
+    """개발/테스트용 학습 이력 시드. 이미 세션이 있으면 기존 세션 반환."""
+    existing = await NormalRangeLearning.find_one(
+        {"line_id": line_id, "part_id": part_id}
+    )
+    if existing is not None:
+        return existing
+
+    now = datetime.now(timezone.utc)
+    t0 = now - timedelta(hours=6)
+    t1 = now - timedelta(hours=4)
+    t2 = now - timedelta(hours=2)
+
+    p0 = LearningParams(
+        current_kA=ParamStats(mean=7.52, std=0.18, sample_count=100),
+        weld_time_cycle=ParamStats(mean=11.8, std=0.42, sample_count=100),
+        force_kN=ParamStats(mean=3.45, std=0.09, sample_count=100),
+    )
+    p1 = LearningParams(
+        current_kA=ParamStats(mean=7.55, std=0.17, sample_count=105),
+        weld_time_cycle=ParamStats(mean=11.9, std=0.40, sample_count=105),
+        force_kN=ParamStats(mean=3.46, std=0.09, sample_count=105),
+    )
+    p2 = LearningParams(
+        current_kA=ParamStats(mean=7.57, std=0.16, sample_count=108),
+        weld_time_cycle=ParamStats(mean=11.9, std=0.39, sample_count=108),
+        force_kN=ParamStats(mean=3.47, std=0.08, sample_count=108),
+    )
+
+    fb_ids_1 = [f"evt_seed_fb1_{i:03d}" for i in range(1, 6)]
+    fb_ids_2 = [f"evt_seed_fb2_{i:03d}" for i in range(1, 4)]
+
+    session = NormalRangeLearning(
+        line_id=line_id,
+        part_id=part_id,
+        status=LearningStatus.COMPLETE,
+        target_sample_count=100,
+        sample_count=108,
+        sample_window_start=t0,
+        params=p2,
+        feedback_event_ids=fb_ids_1 + fb_ids_2,
+        history=[
+            LearningHistoryEntry(
+                timestamp=t0,
+                trigger=LearningTrigger.INITIAL,
+                source_queue_id=None,
+                source_event_ids=[],
+                sample_count=100,
+                params=p0,
+            ),
+            LearningHistoryEntry(
+                timestamp=t1,
+                trigger=LearningTrigger.FEEDBACK,
+                source_queue_id="q_seed_001",
+                source_event_ids=fb_ids_1,
+                sample_count=105,
+                params=p1,
+            ),
+            LearningHistoryEntry(
+                timestamp=t2,
+                trigger=LearningTrigger.FEEDBACK,
+                source_queue_id="q_seed_002",
+                source_event_ids=fb_ids_2,
+                sample_count=108,
+                params=p2,
+            ),
+        ],
+        created_at=t0,
+        updated_at=t2,
+        completed_at=t0,
+    )
+    await session.insert()
+    return session
 
 
 async def get_learning_history(

@@ -26,7 +26,13 @@
       "Bash(git commit -m ' *)",
       "Bash(docker --version)",
       "Bash(bash -n deploy.sh)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\knhye\\\\sili-server\" -Force | Where-Object { $_.Name -notin @\\('venv','.git','node_modules','__pycache__'\\) } | Select-Object Name, Mode)"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\knhye\\\\sili-server\" -Force | Where-Object { $_.Name -notin @\\('venv','.git','node_modules','__pycache__'\\) } | Select-Object Name, Mode)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\knhye\\\\sili-server\" -Recurse -File -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -First 50)",
+      "Bash(Format-Table -Property FullName)",
+      "Bash(Get-Command uvicorn *)",
+      "Bash(Select-Object -ExpandProperty Source)",
+      "PowerShell(& \"C:\\\\Users\\\\knhye\\\\sili-server\\\\venv\\\\Scripts\\\\uvicorn.exe\" --version 2>&1)"
     ]
   }
 }

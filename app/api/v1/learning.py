@@ -6,13 +6,16 @@
 - POST /api/v1/learning/reset          : 세션 초기화 (Admin)
 """
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.core.response import ApiResponse, success_response
+from app.models.user import User, UserRole
+from app.services.auth import require_role
 from app.schemas.learning import (
     LearningHistoryRead,
     LearningRead,
     LearningResetRequest,
+    LearningSeedRequest,
     LearningStartRequest,
 )
 from app.services.learning_service import (
@@ -20,6 +23,7 @@ from app.services.learning_service import (
     get_recent_samples,
     list_learning_sessions,
     reset_learning,
+    seed_learning_history,
     start_learning,
 )
 
@@ -109,4 +113,29 @@ async def reset_learning_endpoint(payload: LearningResetRequest):
     return success_response(
         data={"deleted_count": deleted},
         message="Reset",
+    )
+
+
+@router.post(
+    "/seed",
+    response_model=ApiResponse[LearningRead],
+    status_code=status.HTTP_201_CREATED,
+    summary="학습 이력 테스트 데이터 주입 (개발/테스트용)",
+)
+async def seed_learning_endpoint(
+    payload: LearningSeedRequest,
+    _: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """INITIAL 1건 + FEEDBACK 2건 이력을 가진 COMPLETE 세션을 생성.
+
+    이미 세션이 존재하면 덮어쓰지 않고 기존 세션을 반환.
+    히스토그램·추세 그래프 개발 시 사용.
+    """
+    session = await seed_learning_history(
+        line_id=payload.line_id, part_id=payload.part_id
+    )
+    return success_response(
+        data=LearningRead.from_document(session).model_dump(mode="json"),
+        message="Seeded",
+        code=201,
     )

@@ -42,6 +42,13 @@ class LearningResetRequest(BaseModel):
     )
 
 
+class LearningSeedRequest(BaseModel):
+    """`POST /api/v1/learning/seed` 요청 본문 (개발/테스트용)."""
+
+    line_id: str = Field(..., min_length=1, max_length=64, examples=["LINE-A"])
+    part_id: str = Field(..., min_length=1, max_length=64, examples=["BODY-0042"])
+
+
 class LearningRead(BaseModel):
     """`GET /api/v1/learning/{line_id}` 응답 항목."""
 

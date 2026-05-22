@@ -165,6 +165,15 @@ class WeldingConfig(Document):
         ),
     )
 
+    alert_sound_enabled: bool = Field(
+        default=True,
+        description="알림 사운드 활성화 여부.",
+    )
+    alert_visual_enabled: bool = Field(
+        default=True,
+        description="알림 시각 효과 활성화 여부.",
+    )
+
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         description="마지막 변경 시각 (UTC).",

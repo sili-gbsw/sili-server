@@ -71,6 +71,8 @@ class ConfigRead(BaseModel):
             "v1 보류 항목 (F-11)."
         ),
     )
+    alert_sound_enabled: bool = Field(..., description="알림 사운드 활성화 여부.")
+    alert_visual_enabled: bool = Field(..., description="알림 시각 효과 활성화 여부.")
     updated_at: datetime = Field(..., description="마지막 변경 시각 (UTC).")
 
     @classmethod
@@ -85,6 +87,8 @@ class ConfigRead(BaseModel):
             electrode_wear_limit=doc.electrode_wear_limit,
             min_pitch_mm=doc.min_pitch_mm,
             min_lap_mm=doc.min_lap_mm,
+            alert_sound_enabled=doc.alert_sound_enabled,
+            alert_visual_enabled=doc.alert_visual_enabled,
             updated_at=doc.updated_at,
         )
 
@@ -136,6 +140,14 @@ class ConfigUpdate(BaseModel):
     min_lap_mm: dict[str, float] | None = Field(
         default=None,
         description="판두께(mm, 문자열 키) → 최소 Lap(mm) 전체 교체. (F-11)",
+    )
+    alert_sound_enabled: bool | None = Field(
+        default=None,
+        description="알림 사운드 활성화 여부.",
+    )
+    alert_visual_enabled: bool | None = Field(
+        default=None,
+        description="알림 시각 효과 활성화 여부.",
     )
 
 

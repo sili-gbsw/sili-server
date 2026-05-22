@@ -22,6 +22,8 @@ PATCHABLE_FIELDS: tuple[str, ...] = (
     "electrode_wear_limit",
     "min_pitch_mm",
     "min_lap_mm",
+    "alert_sound_enabled",
+    "alert_visual_enabled",
 )
 
 

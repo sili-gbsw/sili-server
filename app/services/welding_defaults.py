@@ -48,4 +48,6 @@ DEFAULT_WELDING_CONFIG: dict = {
         "1.4": 15, "1.6": 16, "1.8": 17, "2.0": 18,
         "2.4": 20, "2.8": 21, "3.2": 22, "4.0": 32, "5.0": 45,
     },
+    "alert_sound_enabled": True,
+    "alert_visual_enabled": True,
 }

@@ -9,7 +9,6 @@ from app.core.openapi import setup_openapi
 from app.core.response import ApiResponse, success_response
 from app.db.session import close_db, init_db
 from app.services.config_seed import seed_default_config
-from app.services.part_seed import seed_dev_parts
 from app.services.user_seed import seed_default_admin
 
 
@@ -18,7 +17,6 @@ async def lifespan(_: FastAPI):
     await init_db()
     await seed_default_config()
     await seed_default_admin()
-    await seed_dev_parts()
     try:
         yield
     finally:

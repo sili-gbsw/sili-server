@@ -71,11 +71,14 @@ async def create_user(
     )
     try:
         await user.insert()
-    except DuplicateKeyError:
-        raise AppException(
-            message=f"이미 사용 중인 사용자 ID 입니다: {username}",
-            code=409,
-        )
+    except DuplicateKeyError as e:
+        key = list((e.details or {}).get("keyPattern", {}).keys())
+        if "username" in key:
+            raise AppException(
+                message=f"이미 사용 중인 사용자 ID 입니다: {username}",
+                code=409,
+            )
+        raise AppException(message=f"중복 키 오류: {key}", code=409)
     return user
 
 
@@ -90,9 +93,12 @@ async def get_user_by_token(token: str) -> User | None:
     user = await User.find_one(User.session_token == token)
     if user is None:
         return None
-    if user.session_expires_at is None or user.session_expires_at < datetime.now(
-        timezone.utc
-    ):
+    expires_at = user.session_expires_at
+    if expires_at is None:
+        return None
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
         return None
     return user
 

@@ -65,5 +65,5 @@ class User(Document):
         name = "users"
         indexes = [
             IndexModel("username", unique=True),
-            IndexModel("session_token"),
+            IndexModel("session_token", sparse=True),
         ]

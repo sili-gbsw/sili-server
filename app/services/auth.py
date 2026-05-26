@@ -9,21 +9,23 @@
         ...
 """
 
-from fastapi import Depends, Header
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.exceptions import AppException
 from app.models.user import User, UserRole
 from app.services.user_service import get_user_by_token
 
+_bearer = HTTPBearer(auto_error=False)
+
 
 async def current_user(
-    authorization: str | None = Header(default=None),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> User:
     """Authorization: Bearer <token> 필수. 누락/잘못/만료 → 401."""
-    if authorization is None or not authorization.lower().startswith("bearer "):
+    if credentials is None:
         raise AppException(message="인증이 필요합니다.", code=401)
-    token = authorization.split(" ", 1)[1].strip()
-    user = await get_user_by_token(token)
+    user = await get_user_by_token(credentials.credentials)
     if user is None:
         raise AppException(message="세션이 만료되었거나 유효하지 않습니다.", code=401)
     return user

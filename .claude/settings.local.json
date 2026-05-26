@@ -34,7 +34,8 @@
       "Bash(Select-Object -ExpandProperty Source)",
       "PowerShell(& \"C:\\\\Users\\\\knhye\\\\sili-server\\\\venv\\\\Scripts\\\\uvicorn.exe\" --version 2>&1)",
       "Bash(Get-ChildItem C:\\\\Users\\\\knhye\\\\sili-server -Exclude venv)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(Remove-Item *)"
     ]
   }
 }

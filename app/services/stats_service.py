@@ -150,7 +150,8 @@ async def get_hourly_stats(
         },
     ]
 
-    rows = await WeldEvent.aggregate(pipeline).to_list()
+    collection = WeldEvent.get_pymongo_collection()
+    rows = await collection.aggregate(pipeline).to_list(length=None)
 
     bucket_map: dict[int, dict[str, Any]] = {}
     for row in rows:

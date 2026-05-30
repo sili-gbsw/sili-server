@@ -37,7 +37,17 @@
       "Bash(Select-Object Name)",
       "Bash(Remove-Item *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\knhye\\\\sili-server\\\\venv\\\\Lib\\\\site-packages\\\\pymongo\" -Directory)",
-      "Bash(venv\\\\Scripts\\\\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000)"
+      "Bash(venv\\\\Scripts\\\\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(Get-ChildItem -Path C:\\\\Users\\\\knhye\\\\sili-server -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(.venv\\\\Scripts\\\\python.exe *)",
+      "PowerShell(& .\\\\.venv\\\\Scripts\\\\python.exe -c \"from app.schemas.reinspection import DailyDefectPartRead, ReinspectionRead; from app.services.reinspection_service import list_daily_defect_parts; from app.api.v1.reinspection import router; print\\('OK'\\)\")",
+      "PowerShell(& \".\\\\venv\\\\Scripts\\\\python.exe\" -c \"from app.schemas.reinspection import DailyDefectPartRead, ReinspectionRead; from app.services.reinspection_service import list_daily_defect_parts; from app.api.v1.reinspection import router; print\\('OK'\\)\")",
+      "PowerShell(Start-Sleep -Seconds 4; Invoke-WebRequest -Uri \"http://localhost:8000/\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Start-Process -FilePath \".\\\\venv\\\\Scripts\\\\uvicorn.exe\" -ArgumentList \"app.main:app\",\"--host\",\"0.0.0.0\",\"--port\",\"8000\" -NoNewWindow -PassThru | Select-Object -ExpandProperty Id)",
+      "PowerShell(Start-Sleep -Seconds 5; try { \\(Invoke-WebRequest -Uri \"http://localhost:8000/\" -UseBasicParsing\\).Content } catch { $_.Exception.Message })",
+      "PowerShell(\\(Invoke-WebRequest -Uri \"http://localhost:8000/api/v1/reinspection/daily-defects\" -UseBasicParsing\\).Content | ConvertFrom-Json | ConvertTo-Json -Depth 10)",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

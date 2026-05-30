@@ -11,6 +11,7 @@ from app.models.reinspection import (
 )
 
 
+
 class ReinspectionResultCreate(BaseModel):
     """`POST /api/v1/reinspection/{queue_id}/result` 요청 본문."""
 
@@ -60,3 +61,15 @@ class ReinspectionRead(BaseModel):
             created_at=doc.created_at,
             closed_at=doc.closed_at,
         )
+
+
+class DailyDefectPartRead(BaseModel):
+    """`GET /api/v1/reinspection/daily-defects` 응답 항목 — part_id 기준 그룹."""
+
+    part_id: str = Field(..., description="부품 마스터 식별자.")
+    total_queues: int = Field(..., description="당일 결함 확정 큐 건수.")
+    reasons: list[ReinspectionReason] = Field(
+        ..., description="해당 부품에서 발생한 고유 사유 목록."
+    )
+    latest_closed_at: datetime = Field(..., description="가장 최근 결함 확정 시각 (UTC).")
+    queues: list[ReinspectionRead] = Field(..., description="결함 확정 큐 상세 목록.")

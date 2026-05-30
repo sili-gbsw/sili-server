@@ -116,6 +116,50 @@ async def list_queues(
     )
 
 
+async def list_daily_defect_parts(
+    *, target_date: datetime | None = None
+) -> list[dict[str, Any]]:
+    """당일 결함 확정(CLOSED + is_defect=True) 큐를 part_id 기준으로 그룹핑.
+
+    `target_date` 미지정 시 오늘(UTC). 지정 시 해당 날짜의 00:00:00 ~ 23:59:59 (UTC).
+    """
+    if target_date is None:
+        target_date = datetime.now(timezone.utc)
+    else:
+        if target_date.tzinfo is None:
+            target_date = target_date.replace(tzinfo=timezone.utc)
+        else:
+            target_date = target_date.astimezone(timezone.utc)
+
+    day_start = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = target_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    queues = (
+        await ReinspectionQueue.find({
+            "status": ReinspectionStatus.CLOSED.value,
+            "result.is_defect": True,
+            "closed_at": {"$gte": day_start, "$lte": day_end},
+        })
+        .sort(-ReinspectionQueue.closed_at)
+        .to_list()
+    )
+
+    grouped: dict[str, list[ReinspectionQueue]] = {}
+    for q in queues:
+        grouped.setdefault(q.part_id, []).append(q)
+
+    return [
+        {
+            "part_id": pid,
+            "total_queues": len(qs),
+            "reasons": list({q.reason for q in qs}),
+            "latest_closed_at": max(q.closed_at for q in qs if q.closed_at),
+            "queues": qs,
+        }
+        for pid, qs in grouped.items()
+    ]
+
+
 async def submit_result(
     queue_id: str, payload: dict[str, Any]
 ) -> ReinspectionQueue:

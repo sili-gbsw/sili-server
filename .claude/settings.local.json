@@ -48,7 +48,9 @@
       "PowerShell(Start-Sleep -Seconds 5; try { \\(Invoke-WebRequest -Uri \"http://localhost:8000/\" -UseBasicParsing\\).Content } catch { $_.Exception.Message })",
       "PowerShell(\\(Invoke-WebRequest -Uri \"http://localhost:8000/api/v1/reinspection/daily-defects\" -UseBasicParsing\\).Content | ConvertFrom-Json | ConvertTo-Json -Depth 10)",
       "PowerShell(Stop-Process *)",
-      "Bash(Test-Path *)"
+      "Bash(Test-Path *)",
+      "Bash(xargs grep -l \"part_seed\\\\|Part\\\\\\(\")",
+      "WebSearch"
     ]
   }
 }
